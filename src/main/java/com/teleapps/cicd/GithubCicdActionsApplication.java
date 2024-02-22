@@ -13,7 +13,11 @@ public class GithubCicdActionsApplication {
 	public String welcome() {
 		return "welcome to the javatechie";
 	}
-
+	@GetMapping("/get")
+	public String getMessage() {
+		return "welcome to the java world";
+	}
+	
 	public static void main(String[] args) {
 		SpringApplication.run(GithubCicdActionsApplication.class, args);
 	}
