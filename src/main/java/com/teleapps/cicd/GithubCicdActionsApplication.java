@@ -15,7 +15,7 @@ public class GithubCicdActionsApplication {
 	}
 	@GetMapping("/get")
 	public String getMessage() {
-		return "welcome to the java world";
+		return "welcome to the java& Devops world";
 	}
 	
 	public static void main(String[] args) {
