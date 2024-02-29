@@ -11,7 +11,7 @@ public class GithubCicdActionsApplication {
 
 	@GetMapping("/welcome")
 	public String welcome() {
-		return "welcome to the Teleapps ";
+		return "welcome to the Teleapps India PVt LTD ";
 	}
 	@GetMapping("/get")
 	public String getMessage() {
