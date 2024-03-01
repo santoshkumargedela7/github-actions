@@ -15,7 +15,7 @@ public class GithubCicdActionsApplication {
 	}
 	@GetMapping("/get")
 	public String getMessage() {
-		return "welcome to the Teleapps & Devops world";
+		return "welcome to the Teleapps & Devops(cloud) world";
 	}
 	
 	public static void main(String[] args) {
