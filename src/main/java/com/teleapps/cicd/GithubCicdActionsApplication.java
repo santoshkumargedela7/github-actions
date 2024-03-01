@@ -11,11 +11,11 @@ public class GithubCicdActionsApplication {
 
 	@GetMapping("/welcome")
 	public String welcome() {
-		return "welcome to the Teleapps India PVt LTD ";
+		return "welcome to the Teleapps India Pvt LTD ";
 	}
 	@GetMapping("/get")
 	public String getMessage() {
-		return "welcome to the java& Devops world";
+		return "welcome to the Teleapps & Devops world";
 	}
 	
 	public static void main(String[] args) {
