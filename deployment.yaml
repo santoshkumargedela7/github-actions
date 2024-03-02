@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-images-new
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot-images-new
+  template:
+    metadata:
+      labels:
+        app: springboot-images-new
+    spec:
+      containers:
+        - name: springboot-images-new
+          image: santosh345/springboot-images-new
+          ports:
+            - containerPort: 8080
+            
+            
+       
+       
+       
+   
