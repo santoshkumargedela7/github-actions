@@ -1,0 +1,45 @@
+spring.datasource.driver-class-name=oracle.jdbc.driver.OracleDriver
+spring.datasource.url=jdbc:oracle:thin:@HKLPDTODSa-scan.hk.standardchartered.com:1622/DC_CSL_HK_DEV.hk.standardchartered.com
+spring.datasource.username=RDC_IVR
+spring.datasource.password=mIMjm3H9fx9kis4wDdhmsQ==
+
+spring.liquibase.change-log=classpath:/liquibase/changelog-master.xml
+#spring.liquibase.enabled=true
+
+#vault.url = https://vault-dev.sc.net:8200
+vault.url = https://vault-uat.sc.net:8200
+vault.auth.method = APPROLE
+vault.auth.path = auth/approle/login
+vault.tls.auth.path = auth/cert/login
+app.lob = op
+#vault.auth.roleId = 61e78eda-6c85-c2f9-6e2e-ab15bc7b4367
+#vault.auth.secretId = bca9d003-08fa-454d-71c6-4785564a2766
+vault.auth.roleId = 0ed0b1d9-8f26-ef04-3f49-24f6774faee2
+vault.auth.secretId =  28fadc9e-7345-97c5-39a8-7aa2bf704721
+vault.max-retries = 1
+vault.backoff-interval = 1000
+vault.max-backoff-interval = 4000
+
+vault.tls.keyStore.file = keystore
+vault.tls.keyStorekey = changeit
+vault.tls.trustStore.file = truststore
+vault.tls.trustStorekey = changeit
+
+# Static (KV) secrets path as configured in Vault
+kv-secret-path = 51502/kv/data/my-app
+kv-secret-key1 = k1
+
+# Database Secrets Path as configured in Vault
+#mssql-db-secret1-path = ukwvadsql096.uk.dev.net/HashicorpDB/static-creds/HashicorpDB_testdata02
+mssql-db-secret1-path = 51502/hk/db/ukwvadsql096/hashicorpdb/static-creds/role_testdata07
+#oracle-db-secret1-path =sspora-development.c5jrpghrqgde.ap-south-1.rds.amazonaws.com/sspora/static-creds/sspora_app_user21
+oracle-db-secret1-path = 51502/hk/db/sitora-development/sitora/static-creds/role_pt_user2
+#postgres-db-secret1-path =10.198.238.89/static-creds/postgres_pgsit_user1
+postgres-db-secret1-path = 51502/hk/db/sitpg-development/sitpg/static-creds/role_pt_user1
+
+
+# Directory secrets path as configured in Vault
+#ad-secret1-path = ad/zone1/static-cred/1671958
+ad-secret1-path = /51502/ad/zone1/static-cred/role_g.vaultpt.dev
+#oud-secret1-path = oud/static-cred/srv.Hashicorp.test.045
+oud-secret1-path = 51502/oud/hashicorp.testing/static-cred/role_hashicorp.test
