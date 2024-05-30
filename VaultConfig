@@ -1,0 +1,66 @@
+
+package com.db.operations.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+
+@ConfigurationProperties(prefix = "vault")
+public class VaultConfig {
+
+	private String vaultUrl;
+	private int maxRetries;
+	private String appLOB;
+	private String token;
+	private String secretPath;
+	private String secretKey;
+
+	public String getVaultUrl() {
+		return vaultUrl;
+	}
+
+	public void setVaultUrl(String vaultUrl) {
+		this.vaultUrl = vaultUrl;
+	}
+
+	public int getMaxRetries() {
+		return maxRetries;
+	}
+
+	public void setMaxRetries(int maxRetries) {
+		this.maxRetries = maxRetries;
+	}
+
+	public String getAppLOB() {
+		return appLOB;
+	}
+
+	public void setAppLOB(String appLOB) {
+		this.appLOB = appLOB;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public String getSecretPath() {
+		return secretPath;
+	}
+
+	public void setSecretPath(String secretPath) {
+		this.secretPath = secretPath;
+	}
+
+	public String getSecretKey() {
+		return secretKey;
+	}
+
+	public void setSecretKey(String secretKey) {
+		this.secretKey = secretKey;
+	}
+}
