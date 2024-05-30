@@ -1,0 +1,126 @@
+package com.db.operations.config;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
+
+import com.db.operations.config.secrets.VaultAuthenticator;
+import com.db.operations.config.secrets.VaultStaticSecrets;
+
+@Component
+public class VaultMain {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(VaultMain.class);
+
+    private String vaultUrl;
+    private String authMethod;
+    private  String authPath = null;
+    private String vaultTlsAuthPath;
+    private String vaultAuthPath;
+    private  String appLOB = null;
+
+    private  String roleId = null;
+    private String secretId = null;
+
+    private  int maxRetries = 0;
+    private  int backoffInterval = 0;
+    private  int maxBackoffInterval = 0;
+
+    private String kvSecretPath = null;
+    private String kvSecretKey = null;
+
+    private String mssqlDBSecretPath = null;
+    private String oracleDBSecretPath = null;
+    private String postgresDBSecretPath = null;
+
+    private String adSecretPath = null;
+    private String oudSecretPath = null;
+
+    private String keyStoreFile;
+    private String keyStorePassword;
+    private String trustStoreFile;
+    private String trustStorePassword;
+
+    private VaultAuthenticator vaultAuthenticator = null;
+    private VaultStaticSecrets vaultStaticSecrets  = null;
+
+//    public static void main(String[] args) throws Exception {
+//        VaultMain vaultMain = new VaultMain();
+//        vaultMain.readVaultAttributes();
+//        vaultMain.performVaultOperations();
+//  }
+    
+    
+  public void performVaultOperations() throws IOException {
+      String vaultToken = null;
+      LOGGER.info(" authMethod " + authMethod);
+      vaultAuthenticator = new VaultAuthenticator(vaultUrl, appLOB, maxRetries, backoffInterval, maxBackoffInterval);
+      vaultStaticSecrets = new VaultStaticSecrets(vaultUrl, maxRetries, backoffInterval, maxBackoffInterval, appLOB);
+
+      if ("APPROLE".equals(authMethod)) {
+          LOGGER.info("Triggered AppRole authentication with Vault");
+          vaultToken = vaultAuthenticator.authenticateAppRole(roleId, secretId, authPath);
+
+      } else if ("TLS".equals(authMethod)) {
+          LOGGER.info("Triggered TLS authentication with Vault");
+          //get keystore and trust store files
+          File keyStoreFileData = new ClassPathResource(keyStoreFile).getFile();
+          File trustStoreFileData = new ClassPathResource(trustStoreFile).getFile();
+          vaultToken = vaultAuthenticator.authenticateTLS(keyStoreFileData, keyStorePassword, trustStoreFileData, trustStorePassword,vaultTlsAuthPath);
+      }
+      else{
+          LOGGER.info("Invalid authentication method specified in properties file");
+          return;
+      }
+      vaultStaticSecrets.readKVSecrets(vaultToken, kvSecretPath, kvSecretKey);
+      
+
+  }
+
+    public void readVaultAttributes(){
+        Properties props = new Properties();
+        try{
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("application.properties");
+            if (inputStream == null) {
+                throw new FileNotFoundException("application.properties file not found in the classpath");
+            }
+            props.load(inputStream);
+            vaultUrl = props.getProperty("vault.url");
+            authMethod = props.getProperty("vault.auth.method");
+            authPath = props.getProperty("vault.auth.path");
+            vaultTlsAuthPath = props.getProperty("vault.tls.auth.path");
+            roleId = props.getProperty("vault.auth.roleId");
+            secretId = props.getProperty("vault.auth.secretId");
+            appLOB = props.getProperty("app.lob");
+            maxRetries = Integer.parseInt(props.getProperty("vault.max-retries"));
+            backoffInterval = Integer.parseInt(props.getProperty("vault.backoff-interval"));
+            maxBackoffInterval = Integer.parseInt(props.getProperty("vault.max-backoff-interval"));
+
+            keyStoreFile = props.getProperty("vault.tls.keyStore.file");
+            keyStorePassword = props.getProperty("vault.tls.keyStorekey");
+            trustStoreFile = props.getProperty("vault.tls.trustStore.file");
+            trustStorePassword = props.getProperty("vault.tls.trustStorekey");
+
+            kvSecretPath = props.getProperty("kv-secret-path");
+            kvSecretKey = props.getProperty("kv-secret-key1");
+
+            mssqlDBSecretPath = props.getProperty("mssql-db-secret1-path");
+            oracleDBSecretPath = props.getProperty("oracle-db-secret1-path");
+            postgresDBSecretPath = props.getProperty("postgres-db-secret1-path");
+
+            adSecretPath = props.getProperty("ad-secret1-path");
+            oudSecretPath = props.getProperty("oud-secret1-path");
+
+        } catch (IOException ex) {
+            LOGGER.error("Failed to load properties file: " + ex.getMessage());
+        }
+    }
+
+}
