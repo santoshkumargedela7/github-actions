@@ -1,0 +1,80 @@
+package com.db.operations.config;
+
+import com.db.operations.config.secrets.VaultService;
+import com.db.operations.config.secrets.VaultStaticSecrets;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Component
+public class LiquibasePropertiesUpdater implements ApplicationRunner {
+
+    private final VaultStaticSecrets vaultStaticSecrets;
+    private final VaultService vaultService;
+    private final String secretPath;
+    private final String secretKey;
+    private final String roleId;
+    private final String secretId;
+    private final String authPath;
+
+    public LiquibasePropertiesUpdater(
+            VaultStaticSecrets vaultStaticSecrets,
+            VaultService vaultService,
+            @Value("${vault.secretPath}") String secretPath,
+            @Value("${vault.secretKey}") String secretKey,
+            @Value("${vault.roleId}") String roleId,
+            @Value("${vault.secretId}") String secretId,
+            @Value("${vault.authPath}") String authPath) {
+        this.vaultStaticSecrets = vaultStaticSecrets;
+        this.vaultService = vaultService;
+        this.secretPath = secretPath;
+        this.secretKey = secretKey;
+        this.roleId = roleId;
+        this.secretId = secretId;
+        this.authPath = authPath;
+    }
+
+    public void updateLiquibaseProperties() throws IOException {
+        Properties liquibaseProperties = new Properties();
+        try (InputStream input = new FileInputStream("src/main/resources/liquibase/liquibase.properties")) {
+            liquibaseProperties.load(input);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        try {
+            String vaultToken = vaultService.getVaultToken(roleId, secretId, authPath);
+            Map<String, String> secrets = vaultStaticSecrets.readKVSecrets(vaultToken, secretPath, secretKey);
+            Set<String> allowedKeys = Stream.of("driver", "url", "username", "password").collect(Collectors.toSet());
+            for (Map.Entry<String, String> entry : secrets.entrySet()) {
+                if (allowedKeys.contains(entry.getKey())) {
+                    liquibaseProperties.setProperty(entry.getKey(), entry.getValue());
+                }
+            }
+            try (OutputStream output = new FileOutputStream("src/main/resources/liquibase/liquibase.properties")) {
+                liquibaseProperties.store(output, null);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        updateLiquibaseProperties();
+    }
+}
