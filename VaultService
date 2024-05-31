@@ -1,0 +1,23 @@
+package com.db.operations.config.secrets;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class VaultService {
+
+    private final VaultAuthenticator vaultAuthenticator;
+    private String vaultToken;
+
+    @Autowired
+    public VaultService(VaultAuthenticator vaultAuthenticator) {
+        this.vaultAuthenticator = vaultAuthenticator;
+    }
+
+    public String getVaultToken(String roleId, String secretId, String authPath) {
+        if (vaultToken == null) {
+            vaultToken = vaultAuthenticator.authenticateAppRole(roleId, secretId, authPath);
+        }
+        return vaultToken;
+    }
+}
