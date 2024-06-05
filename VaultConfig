@@ -1,10 +1,11 @@
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.vault.core.VaultOperations;
-import org.springframework.vault.core.VaultTemplate;
 import org.springframework.vault.authentication.AppRoleAuthentication;
 import org.springframework.vault.authentication.AppRoleAuthenticationOptions;
 import org.springframework.vault.config.EnvironmentVaultConfiguration;
+import org.springframework.vault.core.VaultOperations;
+import org.springframework.vault.core.VaultTemplate;
+import org.springframework.vault.support.VaultToken;
 
 @Configuration
 public class VaultConfig {
@@ -12,15 +13,17 @@ public class VaultConfig {
     @Bean
     public VaultOperations vaultOperations() {
         EnvironmentVaultConfiguration vaultConfiguration = new EnvironmentVaultConfiguration();
-        VaultTemplate vaultTemplate = new VaultTemplate(vaultConfiguration.restOperations(),
-                                                        vaultConfiguration.sessionManager(),
-                                                        vaultConfiguration.reactiveSessionManager());
+        VaultToken token = loginToVault();
+        return new VaultTemplate(vaultConfiguration.restOperations(), token);
+    }
+
+    private VaultToken loginToVault() {
+        EnvironmentVaultConfiguration vaultConfiguration = new EnvironmentVaultConfiguration();
         AppRoleAuthenticationOptions options = AppRoleAuthenticationOptions.builder()
-                .role(AppRoleAuthenticationOptions.RoleId.provided("your-role-id"))
-                .secret(AppRoleAuthenticationOptions.SecretId.provided("your-secret-id"))
+                .roleId(AppRoleAuthenticationOptions.RoleId.provided("your-role-id"))
+                .secretId(AppRoleAuthenticationOptions.SecretId.provided("your-secret-id"))
                 .build();
-        AppRoleAuthentication auth = new AppRoleAuthentication(options, vaultTemplate.getRestOperations());
-        vaultTemplate.setAuthentication(auth);
-        return vaultTemplate;
+        AppRoleAuthentication auth = new AppRoleAuthentication(options, vaultConfiguration.restOperations());
+        return auth.login();
     }
 }
