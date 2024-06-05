@@ -1,1 +1,1 @@
-Caused by: org.springframework.web.client.ResourceAccessException: I/O error on POST request for "https://https/vault-uat.sc.net:8200/v1/auth/approle/login": https; nested exception is java.net.UnknownHostException: https
+org.springframework.vault.authentication.VaultLoginException: Cannot login using AppRole: invalid role or secret ID; nested exception is org.springframework.web.client.HttpClientErrorException$BadRequest: 400 Bad Request: "{"errors":["invalid role or secret ID"]}<EOL>"
