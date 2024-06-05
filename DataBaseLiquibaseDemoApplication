@@ -3,27 +3,24 @@ package com.db.operations;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.db.operations.config.LiquibasePropertiesUpdater;
 import com.db.operations.config.VaultMain;
 
 @SpringBootApplication
-public class DataBaseLiquibaseDemoApplication implements CommandLineRunner {
+public class DataBaseLiquibaseDemoApplication implements ApplicationRunner {
+		
 	@Autowired
 	VaultMain vaultMain;
+//	@Autowired
+//	private LiquibasePropertiesUpdater liquibasePropertiesUpdater;
 
 	@GetMapping("/get")
 	public String getMessage() {
-		return "welcome to the java world ";
-	}
-
-	@GetMapping("/word")
-	public String getMessageText() {
 		return "welcome to the java world ";
 	}
 
@@ -33,19 +30,12 @@ public class DataBaseLiquibaseDemoApplication implements CommandLineRunner {
 		SpringApplication.run(DataBaseLiquibaseDemoApplication.class, args);
 	}
 
-	@Bean
-	public CommandLineRunner run(LiquibasePropertiesUpdater updater) throws Exception {
-		return args -> {
-			updater.updateLiquibaseProperties();
-		};
-
-	}
-
 	@Override
-	public void run(String... args) throws Exception {
-		vaultMain.readVaultAttributes();
-		vaultMain.performVaultOperations();
+	public void run(ApplicationArguments args) throws Exception {
 
+	//	liquibasePropertiesUpdater.updateLiquibaseProperties();
+		vaultMain.performVaultOperations();
+		vaultMain.readVaultAttributes();
 	}
 
 }
