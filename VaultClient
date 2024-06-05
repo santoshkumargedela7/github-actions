@@ -1,0 +1,38 @@
+package com.db.operations.config;
+
+import org.springframework.vault.authentication.AppRoleAuthentication;
+import org.springframework.vault.authentication.AppRoleAuthenticationOptions;
+import org.springframework.vault.client.VaultEndpoint;
+import org.springframework.vault.core.VaultTemplate;
+import org.springframework.vault.support.VaultResponse;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
+public class VaultClient {
+
+    private VaultTemplate vaultTemplate;
+
+    public VaultClient(String vaultUrl, String roleId, String secretId) {
+        VaultEndpoint vaultEndpoint = VaultEndpoint.from(URI.create(vaultUrl));
+        RestTemplate restTemplate = new RestTemplate();
+
+        AppRoleAuthenticationOptions options = AppRoleAuthenticationOptions.builder()
+                .roleId(AppRoleAuthenticationOptions.RoleId.provided(roleId))
+                .secretId(AppRoleAuthenticationOptions.SecretId.provided(secretId))
+                .build();
+
+        AppRoleAuthentication auth = new AppRoleAuthentication(options, restTemplate);
+        this.vaultTemplate = new VaultTemplate(vaultEndpoint, auth);
+    }
+
+    public Map<String, String> fetchProperties(String path) {
+        VaultResponse response = vaultTemplate.read(path);
+        if (response == null || response.getData() == null) {
+            throw new RuntimeException("Failed to fetch properties from Vault");
+        }
+        return response.getData();
+    }
+}
