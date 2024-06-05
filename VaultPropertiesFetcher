@@ -14,14 +14,20 @@ public class VaultPropertiesFetcher {
     @Value("${kv-secret-path}")
     private String kvSecretPath;
 
-    @Value("${kv-secret-key1}")
-    private String kvSecretKey;
+    @Value("${vault.url}")
+    private String vaultUrl;
+
+    @Value("${vault.auth.roleId}")
+    private String roleId;
+
+    @Value("${vault.auth.secretId}")
+    private String secretId;
 
     public void fetchAndSetProperties() {
         Properties properties = new Properties();
 
-        // Fetch the properties from the Vault using the provided kvSecretPath and kvSecretKey
-        Map<String, String> vaultProperties = fetchPropertiesFromVault(kvSecretPath, kvSecretKey);
+        // Fetch the properties from the Vault using the provided kvSecretPath
+        Map<String, String> vaultProperties = fetchPropertiesFromVault(kvSecretPath);
 
         // Set the properties
         properties.putAll(vaultProperties);
@@ -35,37 +41,14 @@ public class VaultPropertiesFetcher {
         }
     }
 
-    // Method to fetch properties from Vault based on the provided path and key
-    private Map<String, String> fetchPropertiesFromVault(String path, String key) {
-        // Logic to fetch the properties from Vault using the provided path and key
-        // Replace this with your actual logic to fetch properties from Vault
-
-        // For demonstration purposes, let's assume you have a Vault client and use it to fetch the properties
-        VaultClient vaultClient = new VaultClient();
+    // Method to fetch properties from Vault based on the provided path
+    private Map<String, String> fetchPropertiesFromVault(String path) {
+        VaultClient vaultClient = new VaultClient(vaultUrl, roleId, secretId);
         try {
-            // Assuming fetchProperties method is provided by your VaultClient to fetch properties
-            return vaultClient.fetchProperties(path, key);
+            return vaultClient.fetchProperties(path);
         } catch (Exception e) {
-            // Handle exception if unable to fetch properties from Vault
             e.printStackTrace();
             return null; // Return null or empty map in case of failure
-        }
-    }
-
-    // Inner class representing a Vault client (replace this with your actual Vault client implementation)
-    private class VaultClient {
-        // Method to fetch properties from Vault based on the provided path and key
-        public Map<String, String> fetchProperties(String path, String key) {
-            // Replace this with your actual implementation to interact with Vault and fetch properties
-            // For example, you can use Spring Vault or any other Vault client library
-            // Return the fetched properties as a map
-            // This is just a placeholder implementation
-            Map<String, String> vaultProperties = new HashMap<>();
-            vaultProperties.put("driver", "oracle.jdbc.driver.OracleDriver");
-            vaultProperties.put("url", "jdbc:oracle:thin:@HKLPDTODSa-scan.hk.standardchartered.com:1622/DC_CSL_HK_DEV.hk.standardchartered.com");
-            vaultProperties.put("username", "RDC_IVR");
-            vaultProperties.put("password", "password123"); // Replace with your actual logic to fetch the password from Vault
-            return vaultProperties;
         }
     }
 }
