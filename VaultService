@@ -1,1 +1,9 @@
-org.springframework.vault.authentication.VaultLoginException: Cannot login using AppRole: invalid role or secret ID; nested exception is org.springframework.web.client.HttpClientErrorException$BadRequest: 400 Bad Request: "{"errors":["invalid role or secret ID"]}<EOL>"
+Caused by: org.springframework.vault.authentication.VaultLoginException: Cannot login using AppRole: invalid role or secret ID; nested exception is org.springframework.web.client.HttpClientErrorException$BadRequest: 400 Bad Request: "{"errors":["invalid role or secret ID"]}<EOL>"
+	at org.springframework.vault.authentication.VaultLoginException.create(VaultLoginException.java:61) ~[spring-vault-core-3.1.1.jar:3.1.1]
+	at org.springframework.vault.authentication.AppRoleAuthentication.createTokenUsingAppRole(AppRoleAuthentication.java:199) ~[spring-vault-core-3.1.1.jar:3.1.1]
+	at org.springframework.vault.authentication.AppRoleAuthentication.login(AppRoleAuthentication.java:176) ~[spring-vault-core-3.1.1.jar:3.1.1]
+	at org.springframework.vault.authentication.LifecycleAwareSessionManager.doGetSessionToken(LifecycleAwareSessionManager.java:292) ~[spring-vault-core-3.1.1.jar:3.1.1]
+	at org.springframework.vault.authentication.LifecycleAwareSessionManager.getSessionToken(LifecycleAwareSessionManager.java:275) ~[spring-vault-core-3.1.1.jar:3.1.1]
+	at org.springframework.vault.core.VaultTemplate.lambda$getSessionInterceptor$1(VaultTemplate.java:256) ~[spring-vault-core-3.1.1.jar:3.1.1]
+	at org.springframework.http.client.InterceptingClientHttpRequest$InterceptingRequestExecution.execute(InterceptingClientHttpRequest.java:93) ~[spring-web-5.3.29.jar:5.3.29]
+	
