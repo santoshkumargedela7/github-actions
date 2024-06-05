@@ -1,7 +1,53 @@
-Caused by: java.lang.NumberFormatException: Cannot parse null string
-	at java.base/java.lang.Integer.parseInt(Integer.java:630) ~[na:na]
-	at java.base/java.lang.Integer.parseInt(Integer.java:786) ~[na:na]
-	at com.db.operations.config.VaultMain.readVaultAttributes(VaultMain.java:145) ~[classes/:na]
-	at com.db.operations.DataBaseLiquibaseDemoApplication.run(DataBaseLiquibaseDemoApplication.java:35) ~[classes/:na]
-	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:759) ~[spring-boot-2.7.14.jar:2.7.14]
-	... 10 common frames omitted
+package com.db.operations.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.vault.authentication.AppRoleAuthentication;
+import org.springframework.vault.authentication.AppRoleAuthenticationOptions;
+import org.springframework.vault.client.VaultEndpoint;
+import org.springframework.vault.config.AbstractVaultConfiguration;
+import org.springframework.vault.core.VaultOperations;
+import org.springframework.vault.core.VaultTemplate;
+import org.springframework.vault.support.ClientOptions;
+import org.springframework.vault.support.SslConfiguration;
+import org.springframework.vault.support.VaultToken;
+
+@Configuration
+public class VaultConfig extends AbstractVaultConfiguration {
+
+	@Value("${vault.auth.roleId}")
+	private String roleId;
+
+	@Value("${vault.auth.secretId}")
+	private String secretId;
+
+	@Override
+	public VaultEndpoint vaultEndpoint() {
+		return VaultEndpoint.create("https://vault-uat.sc.net", 8200);
+	}
+
+	@Override
+	public ClientOptions clientOptions() {
+		return new ClientOptions();
+	}
+
+	@Override
+	public SslConfiguration sslConfiguration() {
+		return SslConfiguration.unconfigured();
+	}
+
+	@Bean
+	public VaultOperations vaultTemplate(VaultToken vaultToken) {
+		return new VaultTemplate(vaultEndpoint(), clientAuthentication());
+	}
+
+	@Bean
+	public AppRoleAuthentication clientAuthentication() {
+		AppRoleAuthenticationOptions options = AppRoleAuthenticationOptions.builder()
+				.roleId(AppRoleAuthenticationOptions.RoleId.provided(roleId))
+				.secretId(AppRoleAuthenticationOptions.SecretId.provided(secretId)).build();
+		return new AppRoleAuthentication(options, restOperations());
+	}
+
+}
