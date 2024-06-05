@@ -2,28 +2,49 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.vault.authentication.AppRoleAuthentication;
 import org.springframework.vault.authentication.AppRoleAuthenticationOptions;
-import org.springframework.vault.config.EnvironmentVaultConfiguration;
-import org.springframework.vault.core.VaultOperations;
+import org.springframework.vault.client.VaultEndpoint;
+import org.springframework.vault.config.AbstractVaultConfiguration;
 import org.springframework.vault.core.VaultTemplate;
+import org.springframework.vault.core.VaultOperations;
+import org.springframework.vault.support.ClientOptions;
+import org.springframework.vault.support.SslConfiguration;
 import org.springframework.vault.support.VaultToken;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class VaultConfig {
+public class VaultConfig extends AbstractVaultConfiguration {
 
-    @Bean
-    public VaultOperations vaultOperations() {
-        EnvironmentVaultConfiguration vaultConfiguration = new EnvironmentVaultConfiguration();
-        VaultToken token = loginToVault();
-        return new VaultTemplate(vaultConfiguration.restOperations(), token);
+    @Override
+    public VaultEndpoint vaultEndpoint() {
+        return VaultEndpoint.create("https://vault-uat.sc.net", 8200);
     }
 
-    private VaultToken loginToVault() {
-        EnvironmentVaultConfiguration vaultConfiguration = new EnvironmentVaultConfiguration();
+    @Override
+    public ClientOptions clientOptions() {
+        return new ClientOptions();
+    }
+
+    @Override
+    public SslConfiguration sslConfiguration() {
+        return SslConfiguration.unconfigured();
+    }
+
+    @Override
+    public RestTemplate restTemplate() {
+        return super.restTemplate();
+    }
+
+    @Bean
+    public VaultOperations vaultTemplate() {
+        return new VaultTemplate(vaultEndpoint(), clientAuthentication());
+    }
+
+    @Bean
+    public AppRoleAuthentication clientAuthentication() {
         AppRoleAuthenticationOptions options = AppRoleAuthenticationOptions.builder()
                 .roleId(AppRoleAuthenticationOptions.RoleId.provided("your-role-id"))
                 .secretId(AppRoleAuthenticationOptions.SecretId.provided("your-secret-id"))
                 .build();
-        AppRoleAuthentication auth = new AppRoleAuthentication(options, vaultConfiguration.restOperations());
-        return auth.login();
+        return new AppRoleAuthentication(options, restTemplate());
     }
 }
