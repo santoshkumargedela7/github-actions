@@ -1,54 +1,36 @@
 package com.db.operations.config;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 @Component
-public class VaultPropertiesFetcher {
+public class LiquibasePropertiesFetcher {
 
-    @Value("${kv-secret-path}")
-    private String kvSecretPath;
+	private final VaultClient vaultClient;
 
-    @Value("${vault.url}")
-    private String vaultUrl;
+	@Autowired
+	public LiquibasePropertiesFetcher(VaultClient vaultClient) {
+		this.vaultClient = vaultClient;
+	}
 
-    @Value("${vault.auth.roleId}")
-    private String roleId;
+	public void fetchAndSetProperties() {
+		Properties properties = new Properties();
 
-    @Value("${vault.auth.secretId}")
-    private String secretId;
+		Map<String, String> vaultProperties = vaultClient.fetchProperties();
 
-    public void fetchAndSetProperties() {
-        Properties properties = new Properties();
+		properties.putAll(vaultProperties);
 
-        // Fetch the properties from the Vault using the provided kvSecretPath
-        Map<String, String> vaultProperties = fetchPropertiesFromVault(kvSecretPath);
+		try (FileWriter writer = new FileWriter("src/main/resources/liquibase/liquibase.properties")) {
+			properties.store(writer, "Updated by VaultPropertiesFetcher");
+			System.out.println("Liquibase properties updated successfully.");
+		} catch (IOException e) {
+			System.err.println("Failed to update liquibase.properties file: " + e.getMessage());
+		}
+	}
 
-        // Set the properties
-        properties.putAll(vaultProperties);
-
-        // Write the properties to liquibase.properties file
-        try (FileWriter writer = new FileWriter("src/main/resources/liquibase.properties")) {
-            properties.store(writer, "Updated by VaultPropertiesFetcher");
-            System.out.println("Liquibase properties updated successfully.");
-        } catch (IOException e) {
-            System.err.println("Failed to update liquibase.properties file: " + e.getMessage());
-        }
-    }
-
-    // Method to fetch properties from Vault based on the provided path
-    private Map<String, String> fetchPropertiesFromVault(String path) {
-        VaultClient vaultClient = new VaultClient(vaultUrl, roleId, secretId);
-        try {
-            return vaultClient.fetchProperties(path);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null; // Return null or empty map in case of failure
-        }
-    }
 }
