@@ -1,0 +1,61 @@
+
+package com.db.operations.config;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+@Configuration
+
+//@PropertySource("classpath:liquibase/liquibase.properties")
+
+public class DataSourceConfig {
+
+	@Value("${spring.datasource.driver-class-name}")
+	private String driver;
+
+	@Value("${spring.datasource.url}")
+	private String dbUrl;
+
+	@Value("${spring.datasource.username}")
+	private String dbUsername;
+
+	@Value("${spring.datasource.password}")
+	private String encryptPassword;
+
+	@Bean
+	public DataSource datasource() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
+			IllegalBlockSizeException, BadPaddingException {
+		HikariConfig config = new HikariConfig();
+
+		config.setJdbcUrl(dbUrl);
+		config.setDriverClassName(driver);
+		String staticUsername = "RDC_IVR";
+		String ldap_username = "8206755";
+		if (dbUsername.equalsIgnoreCase(ldap_username)) {
+			config.setUsername(staticUsername);
+		} else {
+			config.setUsername(dbUsername);
+		}
+
+		String decryptedPassword = EncryptionUtils.decrypt(encryptPassword);
+		config.setPassword(decryptedPassword);
+
+		HikariDataSource dbConnection = new HikariDataSource(config);
+
+		return dbConnection;
+
+	}
+
+}
