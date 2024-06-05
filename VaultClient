@@ -1,38 +1,55 @@
 package com.db.operations.config;
 
-import org.springframework.vault.authentication.AppRoleAuthentication;
-import org.springframework.vault.authentication.AppRoleAuthenticationOptions;
-import org.springframework.vault.client.VaultEndpoint;
-import org.springframework.vault.core.VaultTemplate;
-import org.springframework.vault.support.VaultResponse;
-import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.vault.core.VaultOperations;
+import org.springframework.vault.support.VaultResponse;
+
+@Component
 public class VaultClient {
 
-    private VaultTemplate vaultTemplate;
+	private final VaultOperations vaultOperations;
 
-    public VaultClient(String vaultUrl, String roleId, String secretId) {
-        VaultEndpoint vaultEndpoint = VaultEndpoint.from(URI.create(vaultUrl));
-        RestTemplate restTemplate = new RestTemplate();
+	private final String kvSecretPath;
 
-        AppRoleAuthenticationOptions options = AppRoleAuthenticationOptions.builder()
-                .roleId(AppRoleAuthenticationOptions.RoleId.provided(roleId))
-                .secretId(AppRoleAuthenticationOptions.SecretId.provided(secretId))
-                .build();
+	public VaultClient(VaultOperations vaultOperations, @Value("${kv-secret-path}") String kvSecretPath) {
+		this.vaultOperations = vaultOperations;
+		this.kvSecretPath = kvSecretPath;
+	}
 
-        AppRoleAuthentication auth = new AppRoleAuthentication(options, restTemplate);
-        this.vaultTemplate = new VaultTemplate(vaultEndpoint, auth);
-    }
+	public Map<String, String> fetchProperties() {
+		Map<String, String> vaultProperties = new HashMap<>();
+		try {
+			VaultResponse response = vaultOperations.read(kvSecretPath);
+			if (response == null || response.getData() == null) {
+				throw new RuntimeException("Failed to fetch properties from Vault");
+			}
 
-    public Map<String, String> fetchProperties(String path) {
-        VaultResponse response = vaultTemplate.read(path);
-        if (response == null || response.getData() == null) {
-            throw new RuntimeException("Failed to fetch properties from Vault");
-        }
-        return response.getData();
-    }
+			Map<String, Object> secretData = response.getData();
+			String driver = (String) secretData.get("driver");
+			String url = (String) secretData.get("url");
+			String username = (String) secretData.get("username");
+			String password = (String) secretData.get("password");
+			vaultProperties.put("driver", driver);
+			vaultProperties.put("url", url);
+			vaultProperties.put("username", username);
+			vaultProperties.put("password", password);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return vaultProperties;
+	}
+
+//	public Map<String, String> fetchProperties() {
+//		Map<String, Object> response = vaultOperations.read(kvSecretPath).getData();
+//		if (response == null) {
+//			throw new RuntimeException("Failed to fetch properties from Vault");
+//		}
+//		return response.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,e -> String.valueOf(e.getValue())));
+//	}
 }
